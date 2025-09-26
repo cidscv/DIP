@@ -8,17 +8,17 @@ def generate_histogram_from_image(image, name=""):
     using matplotlib for chart generation and cv2 to define histogram
     """
 
-    # Generate our output path, may need to fix this to not be relative path. Can use os.path.abspath
-    histogram_output = "../histograms"
+    # Generate our output path using absolute path
+    histogram_output = os.path.abspath("histograms")
 
-    if os.path.exists('../histograms') == False:
+    if not os.path.exists(histogram_output):
         print("Creating histogram output path 'histograms'")
-        os.makedirs('../histograms')
+        os.makedirs(histogram_output)
 
-    # Set out plot figures
+    # Set our plot figures
     plt.figure(figsize=(10, 6))
     
-    # Check of image is colour or b/w
+    # Check if image is colour or b/w
     if len(image.shape) == 3:
         colors = ['red', 'green', 'blue']
         for i, color in enumerate(colors):
@@ -28,17 +28,20 @@ def generate_histogram_from_image(image, name=""):
         hist = cv2.calcHist([image], [0], None, [256], [0, 256])
         plt.plot(hist, color='black', label='Intensity')
     
-    # Set name of plot to image filename if no name provided
+    # Handle case where no name provided
     if name == "":
-        name = image
+        name = "unnamed_image"
 
-    plt.xlabel('Pixel Intensity')
+    plt.xlabel('Light Intensity')
     plt.ylabel('Frequency')
     plt.title(f'Histogram - {name}')
     plt.legend()
     plt.grid(alpha=0.3)
     
     # Save to histogram folder
-    plt.savefig(f"{histogram_output}/{name}", dpi=300, bbox_inches='tight')
-    plt.show()
+    output_file = os.path.join(histogram_output, f"{name}_histogram.png")
+    plt.savefig(output_file, dpi=300, bbox_inches='tight')
     plt.close()
+    
+    print(f"Histogram saved to: {output_file}")
+    return output_file
