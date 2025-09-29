@@ -1,4 +1,8 @@
 __pycache__/
 .venv/
+input_images/
+output_images/
+histograms/
+analysis_output/
 *.jpg
 *.png
