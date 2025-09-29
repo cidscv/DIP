@@ -4,7 +4,7 @@ import json
 import cv2
 
 
-def run_pipeline(image):
+def run_pipeline(image, name="unknown"):
 
     # Want to analyze the amount of clipping occuring after each step and compare with original image
     clipping_output = {}
@@ -32,7 +32,7 @@ def run_pipeline(image):
     processed = unsharp_mask(processed)
     clipping_output["processed"]["after_unsharp"] = detect_clipping(processed)
 
-    with open("analysis_output/clipping_detection.json", "w") as f:
+    with open(f"analysis_output/{name}_clipping_detection.json", "w") as f:
         json.dump(clipping_output, f, indent=4)
 
     output_dir = "output_images"
@@ -40,7 +40,7 @@ def run_pipeline(image):
         os.makedirs(output_dir)
 
     # Output path should be '<image_name>_processed.jpg'
-    output_path = os.path.join(output_dir, "testimage_processed.jpg")
+    output_path = os.path.join(output_dir, f"{name}_baseline_processed.jpg")
     cv2.imwrite(output_path, processed)
     print(f"Processed image saved to: {output_path}")
 
