@@ -1,11 +1,21 @@
 from dip import analysis as aly
 from dip import baseline_proc as baseline
+import argparse
 import os
 import cv2
 
 INPUT_DIR = "input_images"
 
 if __name__ == "__main__":
+
+    """
+    parser = argparse.ArgumentParser(prog="DIP")
+
+    parser.add_argument("--image", metavar="image")
+    parser.add_argument("--out", metavar="output_dir")
+    parser.add_argument("--apply_clahe", metavar="clahe")
+    parser.add_argument("--")
+    """
 
     image_extensions = (".jpg", ".jpeg", ".png", ".bmp", ".tiff")
     image_files = [
