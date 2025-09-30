@@ -17,6 +17,8 @@ def run_custom_pipeline(image, name=""):
     # Step 1: Color balance correction
 
     # Step 2: CLAHE for local contrast enhancement
+    processed = apply_clahe(processed)
+    clipping_output["processed"]["After_CLAHE"] = util.detect_clipping(processed)
 
     # Step 3: Denoising
 
@@ -36,3 +38,11 @@ def run_custom_pipeline(image, name=""):
     print(f"Processed image saved to: {output_path}")
 
     return processed
+
+
+def apply_clahe(image, clipLimit=2.0, tileGridSize=(8, 8)):
+
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=clipLimit, tileGridSize=tileGridSize)
+    equalized = clahe.apply(gray)
+    return equalized
