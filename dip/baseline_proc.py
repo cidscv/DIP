@@ -1,4 +1,5 @@
 import numpy as np
+from dip import util
 import os
 import json
 import cv2
@@ -9,37 +10,37 @@ def run_pipeline(image, name="unknown"):
     # Want to analyze the amount of clipping occuring after each step and compare with original image
     clipping_output = {}
 
-    clipping_output["original"] = detect_clipping(image)
+    clipping_output["original"] = util.detect_clipping(image)
     clipping_output["processed"] = {}
 
     # Levels and curves adjustment
     # Applied first to establish proper tonal foundation before other enhancements
     processed = adjust_levels_and_curves(image)
-    clipping_output["processed"]["after_levelscurves"] = detect_clipping(processed)
+    clipping_output["processed"]["after_levelscurves"] = util.detect_clipping(processed)
 
     # Gamma adjustment
     # Applied second to fine-tune midtone brightness after initial tonal corrections
     processed = apply_gamma_transform(processed)
-    clipping_output["processed"]["after_gamma"] = detect_clipping(processed)
+    clipping_output["processed"]["after_gamma"] = util.detect_clipping(processed)
 
     # Light noise reduction
     # Applied after tonal adjustments to avoid amplifying noise during contrast changes
     processed = apply_median_filter(processed)
-    clipping_output["processed"]["after_noise"] = detect_clipping(processed)
+    clipping_output["processed"]["after_noise"] = util.detect_clipping(processed)
 
     # Unsharp mask
     # Applied last to restore sharpness without enhancing noise or processing artifacts
     processed = unsharp_mask(processed)
-    clipping_output["processed"]["after_unsharp"] = detect_clipping(processed)
+    clipping_output["processed"]["after_unsharp"] = util.detect_clipping(processed)
 
-    with open(f"analysis_output/{name}_clipping_detection.json", "w") as f:
+    with open(f"analysis_output/{name}_baseline_clipping_detection.json", "w") as f:
         json.dump(clipping_output, f, indent=4)
 
     output_dir = "output_images"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Output path should be '<image_name>_processed.jpg'
+    # Output path should be '<image_name>_<pipeline>_processed.jpg'
     output_path = os.path.join(output_dir, f"{name}_baseline_processed.jpg")
     cv2.imwrite(output_path, processed)
     print(f"Processed image saved to: {output_path}")
@@ -113,38 +114,3 @@ def unsharp_mask(image, radius=1.0, amount=0.5, threshold=0):
     blurred = cv2.GaussianBlur(image, (0, 0), radius)
     sharpened = cv2.addWeighted(image, 1.0 + amount, blurred, -amount, 0)
     return np.where(np.abs(image - blurred) > threshold, sharpened, image)
-
-
-def detect_clipping(image, threshold=0.01):
-    """
-    Detect clipping in shadows and highlights
-    threshold=0.01: 1% of pixels at extremes indicates clipping
-    """
-
-    total_pixels = image.shape[0] * image.shape[1]
-
-    if len(image.shape) == 3:
-        clipping_info = {}
-        channel_names = ["Blue", "Green", "Red"]
-
-        for i, channel in enumerate(channel_names):
-            # Count pixels at extreme values (0 = pure black, 255 = pure white)
-            shadows = np.sum(image[:, :, i] == 0) / total_pixels
-            highlights = np.sum(image[:, :, i] == 255) / total_pixels
-
-            clipping_info[channel] = {
-                "shadows_clipped": bool(shadows > threshold),
-                "highlights_clipped": bool(highlights > threshold),
-                "shadow_percent": float(shadows * 100),
-                "highlight_percent": float(highlights * 100),
-            }
-        return clipping_info
-    else:
-        shadows = np.sum(image == 0) / total_pixels
-        highlights = np.sum(image == 255) / total_pixels
-        return {
-            "shadows_clipped": bool(shadows > threshold),
-            "highlights_clipped": bool(highlights > threshold),
-            "shadow_percent": float(shadows * 100),
-            "highlight_percent": float(highlights * 100),
-        }
