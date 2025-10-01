@@ -1,4 +1,8 @@
 import numpy as np
+import os
+import json
+from PIL import Image
+from PIL.ExifTags import TAGS
 
 
 def detect_clipping(image, threshold=0.01):
@@ -34,3 +38,35 @@ def detect_clipping(image, threshold=0.01):
             "shadow_percent": float(shadows * 100),
             "highlight_percent": float(highlights * 100),
         }
+
+def extract_exif(image_path, name=""):
+    """
+    Extract EXIF data from an image
+
+    Args:
+        image_path: path to image file
+
+    Returns:
+        dict: EXIF data with human-readable tags
+    """
+    image = Image.open(image_path)
+    exif_data = image.getexif()
+
+    if exif_data is None:
+        return {"error": "No EXIF data found"}
+
+    # Convert EXIF data to readable format
+    exif_dict = {}
+    for tag_id, value in exif_data.items():
+        tag = TAGS.get(tag_id, tag_id)
+        exif_dict[tag] = str(value)
+
+    # Save to JSON file
+    output_dir = 'exif_data'
+    os.makedirs(output_dir, exist_ok=True)
+    
+    output_path = os.path.join(output_dir, f'{name}_exif_data.json')
+    with open(output_path, 'w') as f:
+        json.dump(exif_dict, f, indent=4)
+    
+    print(f"\n✅ EXIF data saved to: {output_path}")

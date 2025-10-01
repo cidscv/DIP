@@ -25,7 +25,7 @@ def run_pipeline(image, name="unknown"):
 
     # Light noise reduction
     # Applied after tonal adjustments to avoid amplifying noise during contrast changes
-    processed = apply_median_filter(processed)
+    processed = apply_gaussian_filter(processed)
     clipping_output["processed"]["after_noise"] = util.detect_clipping(processed)
 
     # Unsharp mask
@@ -88,14 +88,12 @@ def apply_gamma_transform(image, gamma=1.1):
     return cv2.LUT(image, table)
 
 
-def apply_median_filter(image):
+def apply_gaussian_filter(image, radius=3.0):
     """
-    kernel_size=3: Smallest effective size for noise reduction
-                   Larger kernels would blur important details
-                   3x3 balances noise suppression with detail preservation
-                   Median filter chosen over Gaussian to preserve edges
+    Soft blur to reduce noise while better preserving edges
+    radius=3.0: Small radius to smooth image without over-blurring
     """
-    return cv2.medianBlur(image, 3)
+    return cv2.gaussianBlur(image, (0,0), radius)
 
 
 def unsharp_mask(image, radius=1.0, amount=0.5, threshold=0):

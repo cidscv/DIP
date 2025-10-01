@@ -11,16 +11,15 @@ def run_custom_pipeline(image, name=""):
     clipping_output["original"] = util.detect_clipping(image)
     clipping_output["processed"] = {}
 
-    # TODO
-    processed = None
-
     # Step 1: Color balance correction
+    processed = adjust_levels_and_curves(image)
 
     # Step 2: CLAHE for local contrast enhancement
     processed = apply_clahe(processed)
     clipping_output["processed"]["After_CLAHE"] = util.detect_clipping(processed)
 
     # Step 3: Denoising
+    processed = apply_median_filter(processed)
 
     # Step 4: Targeted sharpening
     processed = high_boost_filter(processed)
@@ -66,3 +65,34 @@ def high_boost_filter(image):
     high_boost_img = cv2.convertScaleAbs(high_boost_float)
 
     return high_boost_img
+
+def adjust_levels_and_curves(image, black_point=0, white_point=255, gamma=1.2):
+    """
+    black_point=0: Preserves existing shadow detail without crushing blacks
+    white_point=255: Uses full dynamic range without clipping highlights
+    gamma=1.2: Brightens midtones for better visibility in low-light scenes
+               Values > 1.0 lift midtones while keeping black/white points intact
+    """
+
+    img_float = (
+        image.astype(np.float32) / 255.0
+    )  # Convert to float for precise calculations
+
+    # Adjust levels - stretches tonal range between black and white points
+    img_float = np.clip(
+        (img_float - black_point / 255.0) / ((white_point - black_point) / 255.0), 0, 1
+    )
+
+    # Gamma correction - power curve brightens midtones
+    img_float = np.power(img_float, 1.0 / gamma)
+
+    return (img_float * 255).astype(np.uint8)
+
+def apply_median_filter(image):
+    """
+    kernel_size=3: Smallest effective size for noise reduction
+                   Larger kernels would blur important details
+                   3x3 balances noise suppression with detail preservation
+                   Median filter chosen over Gaussian to preserve edges
+    """
+    return cv2.medianBlur(image, 3)
