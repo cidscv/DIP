@@ -23,7 +23,7 @@ def run_custom_pipeline(image, name=""):
     # Step 3: Denoising
 
     # Step 4: Targeted sharpening
-    # Restore detail lost during denoising
+    processed = high_boost_filter(processed)
 
     with open(f"analysis_output/{name}_custom_clipping_detection.json", "w") as f:
         json.dump(clipping_output, f, indent=4)
@@ -42,7 +42,27 @@ def run_custom_pipeline(image, name=""):
 
 def apply_clahe(image, clipLimit=2.0, tileGridSize=(8, 8)):
 
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Convert to LAB color space
+    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+
     clahe = cv2.createCLAHE(clipLimit=clipLimit, tileGridSize=tileGridSize)
-    equalized = clahe.apply(gray)
-    return equalized
+    l_clahe = clahe.apply(l)
+
+    lab_clahe = cv2.merge([l_clahe, a, b])
+
+    result = cv2.cvtColor(lab_clahe, cv2.COLOR_LAB2BGR)
+
+    return result
+
+def high_boost_filter(image):
+
+    img_float = image.astype(np.float64)
+    img_blur = cv2.GaussianBlur(img_float, (15, 15), 0, 0)
+
+    k = 2.5
+
+    high_boost_float = (1 + k) * img_float - k * img_blur
+    high_boost_img = cv2.convertScaleAbs(high_boost_float)
+
+    return high_boost_img
