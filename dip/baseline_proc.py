@@ -33,7 +33,10 @@ def run_pipeline(image, name="unknown"):
     processed = unsharp_mask(processed)
     clipping_output["processed"]["after_unsharp"] = util.detect_clipping(processed)
 
-    with open(f"analysis_output/{name}_baseline_clipping_detection.json", "w") as f:
+    analysis_dir = 'analysis_output'
+    if not os.path.exists(analysis_dir):
+        os.makedirs(analysis_dir)
+    with open(f"{analysis_dir}/{name}_baseline_clipping_detection.json", "w") as f:
         json.dump(clipping_output, f, indent=4)
 
     output_dir = "output_images"
@@ -93,7 +96,7 @@ def apply_gaussian_filter(image, radius=3.0):
     Soft blur to reduce noise while better preserving edges
     radius=3.0: Small radius to smooth image without over-blurring
     """
-    return cv2.gaussianBlur(image, (0,0), radius)
+    return cv2.GaussianBlur(image, (0,0), radius)
 
 
 def unsharp_mask(image, radius=1.0, amount=0.5, threshold=0):
