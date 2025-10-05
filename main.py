@@ -1,21 +1,44 @@
 from dip import analysis as aly
 from dip import baseline_proc as baseline
+from dip import custom_proc as custom
+from dip import util
 import argparse
 import os
 import cv2
 
-INPUT_DIR = "input_images"
-
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="DIP",
+        description="Digital Image Processing pipeline - processes images using different pipeline methods",
+    )
 
-    """
-    parser = argparse.ArgumentParser(prog="DIP")
+    parser.add_argument(
+        "--image_dir",
+        metavar="imagedir",
+        required=True,
+        help="Directory containing input images to process",
+    )
 
-    parser.add_argument("--image", metavar="image")
-    parser.add_argument("--out", metavar="output_dir")
-    parser.add_argument("--apply_clahe", metavar="clahe")
-    parser.add_argument("--")
-    """
+    parser.add_argument(
+        "--out",
+        metavar="output_dir",
+        required=True,
+        help="Directory where processed images will be saved",
+    )
+
+    parser.add_argument(
+        "--pipeline",
+        metavar="pipeline",
+        required=True,
+        choices=["A", "B"],
+        help="Pipeline to use for processing (choices: A, B)",
+    )
+
+    args = parser.parse_args()
+
+    # Use the parsed arguments
+    INPUT_DIR = args.image_dir
+    OUTPUT_DIR = args.out
 
     image_extensions = (".jpg", ".jpeg", ".png", ".bmp", ".tiff")
     image_files = [
@@ -29,21 +52,34 @@ if __name__ == "__main__":
     print(f"Found {len(image_files)} images to process\n")
 
     # Process each image
-    for filename in image_files:
+    for file_path in image_files:
 
-        filename = os.path.splitext(filename)[0]
+        print(file_path)
 
-        image = cv2.imread(f"input_images/{filename}.JPG")
+        filename = os.path.splitext(file_path)[0]
+        image = cv2.imread(f"{INPUT_DIR}/{filename}.JPG")
 
         if image is None:
-            print("Error: Could not load image")
+            print(f"Error: Could not load image {filename}")
             continue
 
         print(f"Original image shape: {image.shape}")
         aly.generate_histogram_from_image(image, name=f"{filename}_original")
 
-        print("\n=== Running Baseline Pipeline ===\n")
-        processed = baseline.run_pipeline(image, name=f"{filename}")
-        print("\n=== Finished Baseline Pipeline ===\n")
+        print(f"Generating EXIF Data")
+        util.extract_exif(f"{INPUT_DIR}/{file_path}", OUTPUT_DIR, name=f"{filename}")
+
+        # Run the appropriate pipeline based on the argument
+        if args.pipeline == "A":
+            print("\n=== Running Pipeline A ===\n")
+            processed = baseline.run_pipeline(image, OUTPUT_DIR, name=f"{filename}")
+            print("\n=== Finished Pipeline A ===\n")
+
+        elif args.pipeline == "B":
+            print("\n=== Running Pipeline B ===\n")
+            processed = custom.run_custom_pipeline(
+                image, OUTPUT_DIR, name=f"{filename}"
+            )
+            print("\n=== Finished Pipeline B ===\n")
 
         aly.generate_histogram_from_image(processed, name=f"{filename}_processed")

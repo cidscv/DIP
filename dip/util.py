@@ -39,13 +39,12 @@ def detect_clipping(image, threshold=0.01):
             "highlight_percent": float(highlights * 100),
         }
 
-def extract_exif(image_path, name=""):
+
+def extract_exif(image_path, image_output_dir, name=""):
     """
     Extract EXIF data from an image
-
     Args:
         image_path: path to image file
-
     Returns:
         dict: EXIF data with human-readable tags
     """
@@ -61,12 +60,22 @@ def extract_exif(image_path, name=""):
         tag = TAGS.get(tag_id, tag_id)
         exif_dict[tag] = str(value)
 
+    # Get ISO
+    exif_ifd = exif_data.get_ifd(0x8769)
+
+    if exif_ifd:
+        for tag_id, value in exif_ifd.items():
+            tag = TAGS.get(tag_id, tag_id)
+            exif_dict[tag] = str(value)
+
     # Save to JSON file
-    output_dir = 'exif_data'
+    output_dir = f"{image_output_dir}/exif_data"
     os.makedirs(output_dir, exist_ok=True)
-    
-    output_path = os.path.join(output_dir, f'{name}_exif_data.json')
-    with open(output_path, 'w') as f:
+    output_path = os.path.join(output_dir, f"{name}_exif_data.json")
+
+    with open(output_path, "w") as f:
         json.dump(exif_dict, f, indent=4)
-    
-    print(f"\n✅ EXIF data saved to: {output_path}")
+
+    print(f"\nEXIF data saved to: {output_path}")
+
+    return exif_dict

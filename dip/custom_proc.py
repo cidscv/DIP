@@ -1,33 +1,193 @@
 from dip import util
-import numpy as np
+from dip import filters as fil
 import cv2
-import json
 import os
 
 
-def run_custom_pipeline(image, name=""):
+def run_custom_pipeline(image, output_dir, name=""):
 
-    clipping_output = {}
-    clipping_output["original"] = util.detect_clipping(image)
-    clipping_output["processed"] = {}
+    print(
+        f"Custom Pipeline B\n{'='*20}\n\nImage = {name}\n\nChoose from the list of filters below!"
+    )
 
-    # Step 1: Color balance correction
-    processed = adjust_levels_and_curves(image)
+    filters = {
+        1: "Adjust Levels and Curves",
+        2: "Apply Gamma Transform",
+        3: "Apply Gaussian Filter",
+        4: "Apply Median Filter",
+        5: "Apply CLAHE",
+        6: "High Boost Filter",
+        7: "Unsharp Mask",
+        8: "White Colour Balance Correction",
+        9: "Exit",
+    }
 
-    # Step 2: CLAHE for local contrast enhancement
-    processed = apply_clahe(processed)
-    clipping_output["processed"]["After_CLAHE"] = util.detect_clipping(processed)
+    while True:
+        for k, v in filters.items():
+            print(f"{k}: {v}")
+        choice = int(input(f"Option: "))
 
-    # Step 3: Denoising
-    processed = apply_median_filter(processed)
+        match choice:
+            case 1:
+                print(f"Choice = {filters.get(1)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.adjust_levels_and_curves(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 2:
+                print(f"Choice = {filters.get(2)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.apply_gamma_transform(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 3:
+                print(f"Choice = {filters.get(3)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.apply_gaussian_filter(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 4:
+                print(f"Choice = {filters.get(4)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.apply_median_filter(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 5:
+                print(f"Choice = {filters.get(5)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.apply_clahe(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 6:
+                print(f"Choice = {filters.get(6)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.high_boost_filter(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 7:
+                print(f"Choice = {filters.get(7)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.unsharp_mask(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 8:
+                print(f"Choice = {filters.get(8)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.white_balance_correction(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 9:
+                print(f"Exiting. Thank you!")
+                break
+            case _:
+                print("Invalid Entry - Try Again!")
+                continue
 
-    # Step 4: Targeted sharpening
-    processed = high_boost_filter(processed)
-
-    with open(f"analysis_output/{name}_custom_clipping_detection.json", "w") as f:
-        json.dump(clipping_output, f, indent=4)
-
-    output_dir = "output_images"
+    processed = image
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -37,62 +197,3 @@ def run_custom_pipeline(image, name=""):
     print(f"Processed image saved to: {output_path}")
 
     return processed
-
-
-def apply_clahe(image, clipLimit=2.0, tileGridSize=(8, 8)):
-
-    # Convert to LAB color space
-    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
-    l, a, b = cv2.split(lab)
-
-    clahe = cv2.createCLAHE(clipLimit=clipLimit, tileGridSize=tileGridSize)
-    l_clahe = clahe.apply(l)
-
-    lab_clahe = cv2.merge([l_clahe, a, b])
-
-    result = cv2.cvtColor(lab_clahe, cv2.COLOR_LAB2BGR)
-
-    return result
-
-def high_boost_filter(image):
-
-    img_float = image.astype(np.float64)
-    img_blur = cv2.GaussianBlur(img_float, (15, 15), 0, 0)
-
-    k = 2.5
-
-    high_boost_float = (1 + k) * img_float - k * img_blur
-    high_boost_img = cv2.convertScaleAbs(high_boost_float)
-
-    return high_boost_img
-
-def adjust_levels_and_curves(image, black_point=0, white_point=255, gamma=1.2):
-    """
-    black_point=0: Preserves existing shadow detail without crushing blacks
-    white_point=255: Uses full dynamic range without clipping highlights
-    gamma=1.2: Brightens midtones for better visibility in low-light scenes
-               Values > 1.0 lift midtones while keeping black/white points intact
-    """
-
-    img_float = (
-        image.astype(np.float32) / 255.0
-    )  # Convert to float for precise calculations
-
-    # Adjust levels - stretches tonal range between black and white points
-    img_float = np.clip(
-        (img_float - black_point / 255.0) / ((white_point - black_point) / 255.0), 0, 1
-    )
-
-    # Gamma correction - power curve brightens midtones
-    img_float = np.power(img_float, 1.0 / gamma)
-
-    return (img_float * 255).astype(np.uint8)
-
-def apply_median_filter(image):
-    """
-    kernel_size=3: Smallest effective size for noise reduction
-                   Larger kernels would blur important details
-                   3x3 balances noise suppression with detail preservation
-                   Median filter chosen over Gaussian to preserve edges
-    """
-    return cv2.medianBlur(image, 3)
