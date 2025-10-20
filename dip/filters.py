@@ -106,6 +106,19 @@ def apply_median_filter(image, kernel_size=3):
     """
     return cv2.medianBlur(image, kernel_size)
 
+def laplacian_filter(image):
+
+    laplacian_kernel = np.array([
+        [-1, -1, -1],
+        [-1,  8, -1],
+        [-1, -1, -1]], dtype=np.float32)
+
+    laplacian = cv2.filter2D(image, -1, laplacian_kernel)
+
+    sharpened = cv2.add(image, laplacian)
+    sharpened = np.clip(sharpened, 0, 255).astype(np.uint8)
+
+    return sharpened
 
 def white_balance_correction(image):
     result = image.copy().astype(np.float32)

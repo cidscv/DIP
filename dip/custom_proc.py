@@ -19,7 +19,8 @@ def run_custom_pipeline(image, output_dir, name=""):
         6: "High Boost Filter",
         7: "Unsharp Mask",
         8: "White Colour Balance Correction",
-        9: "Exit",
+        9: "Laplacian",
+        10: "Exit",
     }
 
     while True:
@@ -181,6 +182,25 @@ def run_custom_pipeline(image, output_dir, name=""):
                 else:
                     continue
             case 9:
+                print(f"Choice = {filters.get(9)}")
+                confirm = input(f"Is this okay? (y/n): ")
+                if confirm.upper() == "Y":
+                    processed = fil.laplacian_filter(image)
+                    clipping = util.detect_clipping(processed)
+                    for k, v in clipping.items():
+                        if k == "shadows_clipped" or k == "highlights_clipped":
+                            if v == True:
+                                clipping_confirm = input(
+                                    f"Clipping has occurred, reset? (y/n): "
+                                )
+                                if clipping_confirm.upper() == "Y":
+                                    continue
+                                else:
+                                    print(f"Not resetting after clipping!")
+                    image = processed
+                else:
+                    continue
+            case 10:
                 print(f"Exiting. Thank you!")
                 break
             case _:

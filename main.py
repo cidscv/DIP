@@ -29,9 +29,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--pipeline",
         metavar="pipeline",
-        required=True,
+        required=False,
         choices=["A", "B"],
         help="Pipeline to use for processing (choices: A, B)",
+    )
+
+    parser.add_argument(
+        "--gen_hists",
+        required=False,
+        help="Generate just histograms",
     )
 
     args = parser.parse_args()
@@ -74,6 +80,7 @@ if __name__ == "__main__":
             print("\n=== Running Pipeline A ===\n")
             processed = baseline.run_pipeline(image, OUTPUT_DIR, name=f"{filename}")
             print("\n=== Finished Pipeline A ===\n")
+            aly.generate_histogram_from_image(processed, name=f"{filename}_processed")
 
         elif args.pipeline == "B":
             print("\n=== Running Pipeline B ===\n")
@@ -81,5 +88,9 @@ if __name__ == "__main__":
                 image, OUTPUT_DIR, name=f"{filename}"
             )
             print("\n=== Finished Pipeline B ===\n")
+            aly.generate_histogram_from_image(processed, name=f"{filename}_processed")
+        
+        else:
+            print("Not running pipeline on images")
 
-        aly.generate_histogram_from_image(processed, name=f"{filename}_processed")
+        
