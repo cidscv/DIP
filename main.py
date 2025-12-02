@@ -16,6 +16,7 @@ from dip import pipeline_a_freq
 from dip import pipeline_b_custom
 from dip import visualization
 from dip import metrics
+import numpy as np
 import argparse
 import os
 import cv2
