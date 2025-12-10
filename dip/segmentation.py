@@ -1,14 +1,3 @@
-"""
-Image Segmentation Module
-Based on Week 7 lecture content - CP 8315 Digital Image Processing
-
-Implements segmentation methods including:
-- Manual and automatic (Otsu) thresholding
-- Adaptive thresholding (mean and Gaussian)
-- K-means clustering for color-based segmentation
-- Region growing (flood fill)
-"""
-
 import numpy as np
 import cv2
 from sklearn.cluster import KMeans

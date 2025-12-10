@@ -4,5 +4,14 @@ input_images/
 output_images/
 histograms/
 analysis_output/
+exif_data/
+ground_truth/
+input*
+butterworth.py
+feature_detection.py
+image_restoration.py
+low_pass.py
+otsu.py
+ts.py
 *.jpg
 *.png

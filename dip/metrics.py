@@ -1,15 +1,3 @@
-"""
-Segmentation Evaluation Metrics Module
-Based on Week 7 lecture content - CP 8315 Digital Image Processing
-
-Implements evaluation metrics for segmentation:
-- Dice coefficient (F1-score)
-- Intersection over Union (IoU / Jaccard index)
-- Pixel accuracy
-- Precision and Recall
-- Confusion matrix components
-"""
-
 import numpy as np
 import cv2
 

@@ -1,13 +1,3 @@
-"""
-Frequency Domain Filtering Module
-Based on Week 8 lecture content - CP 8315 Digital Image Processing
-
-Implements frequency-domain filters including:
-- Ideal, Butterworth, and Gaussian filters (low-pass, high-pass)
-- Band-pass and band-reject filters
-- Spectrum visualization utilities
-"""
-
 import numpy as np
 import cv2
 
@@ -56,8 +46,8 @@ def compute_idft(dft_shift):
     # Inverse shift
     f_ishift = np.fft.ifftshift(dft_shift)
     
-    # Inverse DFT
-    img_back = cv2.idft(f_ishift)
+    # Inverse DFT with normalization flag
+    img_back = cv2.idft(f_ishift, flags=cv2.DFT_SCALE)
     img_back = cv2.magnitude(img_back[:, :, 0], img_back[:, :, 1])
     
     return np.clip(img_back, 0, 255).astype(np.uint8)

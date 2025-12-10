@@ -1,16 +1,3 @@
-"""
-Pipeline B: Problem-Oriented Enhancement & Segmentation
-Based on Assignment 2 requirements - CP 8315 Digital Image Processing
-
-Customized pipeline tailored to specific image challenges:
-- Band-pass/band-reject for periodic noise
-- Adaptive thresholding for uneven lighting
-- K-means clustering for color-based segmentation
-- Region growing for connected objects
-- Top-hat/bottom-hat for feature extraction
-- Advanced morphological reconstruction
-"""
-
 import cv2
 import numpy as np
 from dip import freq_filters, segmentation, morphology, metrics
@@ -110,7 +97,8 @@ class ProblemOrientedPipeline:
             opening_size=3,
             closing_size=5,
             remove_small=True,
-            min_size=100
+            min_size=100,
+            fill_holes_flag=False
         )
         stages['4_final'] = result
         
@@ -172,7 +160,7 @@ class ProblemOrientedPipeline:
             opening_size=3,
             closing_size=5,
             remove_small=True,
-            fill_holes_flag=True
+            fill_holes_flag=False
         )
         stages['4_final'] = result
         
@@ -197,16 +185,10 @@ class ProblemOrientedPipeline:
         k = params.get('k', 3)
         target_cluster = params.get('target_cluster', None)
         use_lpf = params.get('use_lpf', True)
-        cutoff_radius = params.get('cutoff_radius', 40)
+        cutoff_radius = params.get('cutoff_radius', 150)
         
-        # Step 1: Optional low-pass filtering
-        if use_lpf:
-            print(f"  Step 1: Gaussian low-pass filtering...")
-            filtered = freq_filters.apply_gaussian_lpf(image, cutoff_radius=cutoff_radius)
-            stages['2_filtered'] = filtered
-        else:
-            filtered = image.copy()
-            stages['2_no_filtering'] = filtered
+        filtered = image.copy()
+        stages['2_no_filtering'] = filtered
         
         # Step 2: K-means clustering
         print(f"  Step 2: K-means clustering (k={k})...")
@@ -218,27 +200,56 @@ class ProblemOrientedPipeline:
         # Step 3: Select target cluster
         if target_cluster is None:
             # Automatically select largest non-background cluster
-            print(f"  Step 3: Auto-selecting target cluster...")
+            print("  Step 3: Auto-selecting target cluster...")
+            # Find cluster with MEDIUM area (not largest background, not smallest noise)
             cluster_sizes = [np.sum(labels == i) for i in range(k)]
-            # Assume background is largest cluster, take second largest
-            sorted_indices = np.argsort(cluster_sizes)[::-1]
-            target_cluster = sorted_indices[1] if k > 1 else 0
+            sorted_clusters = np.argsort(cluster_sizes)  # Sort from smallest to largest
+
+            # Select middle cluster for k=3, smaller for k=2
+            if k == 3:
+                sorted_clusters = np.argsort(cluster_sizes)
+                # Largest is usually background - pick second largest
+                target_cluster = sorted_clusters[-2]  # Second largest cluster
+            elif k == 2:
+                target_cluster = sorted_clusters[0]
+            else:
+                target_cluster = sorted_clusters[k//2]
+            
             print(f"    Selected cluster {target_cluster}")
+            print(f"    DEBUG - Cluster percentages: {[f'{s/labels.size*100:.1f}%' for s in cluster_sizes]}")
+            print(f"    DEBUG - Sorted order: {sorted_clusters}")
+
+            # Show cluster sizes for debugging
+            for i in range(k):
+                pct = (cluster_sizes[i] / labels.size) * 100
+                print(f"    Cluster {i}: {cluster_sizes[i]:,} pixels ({pct:.1f}%)")
+            print(f"    Selected cluster {target_cluster}")
+
+            # Create binary mask for selected cluster
+            # Cluster pixels = 255 (white = foreground), others = 0 (black = background)
+            mask = (labels == target_cluster).astype(np.uint8) * 255
+            
+            # SAVE THE MASK BEFORE MORPHOLOGY FOR INSPECTION
+            cv2.imwrite('debug_mask_before_morphology.png', mask)
+            print(f"    DEBUG - Saved debug_mask_before_morphology.png")
+
+            binary = (labels == target_cluster).astype(np.uint8) * 255
+            print(f"    DEBUG - Binary mask: pixels={np.sum(binary==255):,} ({np.sum(binary==255)/binary.size*100:.1f}%)")
+            cv2.imwrite('debug_binary_before_cleanup.png', binary)
+
+            # NO inversion needed - cluster already has object as white
+            stages['3_clustered'] = mask
         
         binary = (labels == target_cluster).astype(np.uint8) * 255
         stages['4_selected_cluster'] = binary
         
         # Step 4: Morphological cleanup
         print(f"  Step 4: Morphological cleanup...")
-        result = morphology.cleanup_segmentation(
-            binary,
-            opening_size=5,
-            closing_size=7,
-            remove_small=True,
-            fill_holes_flag=True
-        )
+        # TEMP: Skip all morphology to see raw K-means output
+        result = binary.copy()
+        # result = morphology.cleanup_segmentation(...)
         stages['5_final'] = result
-        
+
         used_params = {
             'strategy': 'color_based',
             'k': k,

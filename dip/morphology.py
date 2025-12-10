@@ -1,14 +1,3 @@
-"""
-Morphological Operations Module
-Based on Week 7 & Week 9 lecture content - CP 8315 Digital Image Processing
-
-Implements morphological operations for image post-processing:
-- Basic operations: dilation, erosion, opening, closing
-- Advanced operations: top-hat, bottom-hat, gradient
-- Reconstruction operations
-- Connected component analysis
-"""
-
 import numpy as np
 import cv2
 

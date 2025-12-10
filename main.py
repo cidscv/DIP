@@ -1,13 +1,3 @@
-"""
-Digital Image Processing - Assignment 2
-Frequency-Domain Filtering & Segmentation Pipelines
-
-Updated to support:
-- Pipeline A: Baseline frequency + segmentation
-- Pipeline B: Problem-oriented strategies
-- Ablation studies and comparisons
-"""
-
 from dip import analysis as aly
 from dip import baseline_proc as baseline_old
 from dip import custom_proc as custom_old
@@ -25,8 +15,8 @@ import json
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="DIP Assignment 2",
-        description="Frequency-domain filtering and segmentation pipelines",
+        prog="DIP",
+        description="Different Image Processing pipelines",
     )
 
     parser.add_argument(
@@ -106,6 +96,7 @@ def main():
     INPUT_DIR = args.image_dir
     OUTPUT_DIR = args.out
     GT_DIR = args.ground_truth
+    EXIF_DIR = "exif_data"
 
     image_extensions = (".jpg", ".jpeg", ".png", ".bmp", ".tiff", ".JPG", ".JPEG", ".PNG")
     image_files = [
@@ -167,7 +158,7 @@ def main():
         for ext in image_extensions:
             test_path = os.path.join(INPUT_DIR, filename + ext)
             if os.path.exists(test_path):
-                util.extract_exif(test_path, OUTPUT_DIR, name=f"{filename}")
+                util.extract_exif(test_path, EXIF_DIR, name=f"{filename}")
                 break
 
         # Run pipelines
@@ -281,7 +272,8 @@ def main():
                 result, evaluation = pipeline_b_custom.run_problem_oriented_pipeline(
                     image,
                     strategy=args.strategy,
-                    ground_truth=ground_truth
+                    ground_truth=ground_truth,
+                    return_all_stages=True
                 )
                 
                 # Save results

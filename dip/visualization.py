@@ -1,15 +1,3 @@
-"""
-Visualization Module for Assignment 2
-Generates figures, plots, and visual comparisons for the report
-
-Functions for:
-- Frequency spectrum visualization (before/after)
-- Side-by-side image comparisons
-- Segmentation overlays with color coding
-- Multi-panel figure generation
-- Crop extraction for detailed views
-"""
-
 import numpy as np
 import cv2
 import matplotlib.pyplot as plt

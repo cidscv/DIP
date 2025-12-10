@@ -1,14 +1,3 @@
-"""
-Pipeline A: Baseline Frequency-Domain Filtering & Segmentation
-Based on Assignment 2 requirements - CP 8315 Digital Image Processing
-
-Baseline pipeline applies minimal sequence for basic segmentation:
-1. Low-pass pre-processing (Gaussian) to reduce noise
-2. Global thresholding (Otsu) to obtain binary mask
-3. Morphological cleanup (opening + closing) to refine mask
-4. Remove small objects as final cleanup
-"""
-
 import cv2
 import numpy as np
 from dip import freq_filters, segmentation, morphology, metrics
